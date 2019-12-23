@@ -8,6 +8,7 @@ FROM wordpress:5.3.1-apache
 RUN apt-get -y update
 # subversion is needed for composer
 RUN apt-get -y install git
+RUN apt-get -y install svn
 RUN apt-get -y install unzip
 
 # needed stuff for node
