@@ -20,11 +20,14 @@ RUN npm i -g yarn
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html/wp-content/themes/presspack
+USER www-data:www-data
+
 COPY . .
+
+
 
 RUN yarn install
 RUN composer install --no-interaction
 
 WORKDIR /
 
-USER www-data:www-data
