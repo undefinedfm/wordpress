@@ -8,7 +8,6 @@ FROM wordpress:5.3.1-apache
 RUN apt-get -y update
 # subversion is needed for composer
 RUN apt-get -y install git
-RUN apt-get -y install svn
 RUN apt-get -y install unzip
 
 # needed stuff for node
@@ -26,6 +25,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 COPY . /var/www/html/wp-content/themes/presspack
 WORKDIR /var/www/html/wp-content/themes/presspack
 RUN yarn install
-RUN composer install --no-interaction --prefer-source
+RUN composer install --no-interaction
 
 USER www-data:www-data
