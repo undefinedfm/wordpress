@@ -25,6 +25,7 @@ RUN ls -la
 RUN yarn install
 RUN composer install --no-interaction
 RUN chown -R www-data:www-data /var/www/html/wp-content/themes/presspack
+RUN chmod 755 /var/www/html/wp-content/themes/presspack
 USER www-data:www-data
 WORKDIR /var/www/html
 
