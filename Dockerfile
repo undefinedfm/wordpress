@@ -7,7 +7,12 @@ RUN mv "$PHP_INI_DIR"/php.ini-development "$PHP_INI_DIR"/php.ini
 
 # install_wordpress.sh & misc. dependencies
 RUN apt-get update; \
-  apt-get install -yq mariadb-client netcat sudo less git unzip nodejs
+  apt-get install -yq mariadb-client netcat sudo less git unzip
+
+# node.js
+RUN RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get install -yq nodejs
+RUN npm i -g yarn
 
 # wp-cli
 RUN curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o wp; \
@@ -21,8 +26,6 @@ RUN curl -sL https://raw.githubusercontent.com/composer/getcomposer.org/master/w
   mv composer.phar /usr/local/bin/composer; \
   mkdir /var/www/.composer; \
   chown www-data:www-data /var/www/.composer
-
-RUN npm i -g yarn
 
 # phpunit, phpcs, wpcs
 RUN sudo -u www-data composer global require \
