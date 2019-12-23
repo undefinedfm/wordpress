@@ -15,7 +15,6 @@ RUN apt-get -y install curl software-properties-common
 RUN apt-get -y install gnupg
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install -y nodejs
-WORKDIR /
 
 RUN npm i -g yarn
 
@@ -23,10 +22,8 @@ RUN npm i -g yarn
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . /var/www/html/wp-content/themes/presspack
-WORKDIR /var/www/html/wp-content/themes/presspack
-RUN yarn install
-RUN composer install --no-interaction
 
-WORKDIR /var/www/html
+RUN cd /var/www/html/wp-content/themes/presspack && yarn install
+RUN cd /var/www/html/wp-content/themes/presspack && composer install --no-interaction
 
 USER www-data:www-data
