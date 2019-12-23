@@ -1,0 +1,69 @@
+{
+  "name": "palmerhq/presspack",
+  "description": "Minimalist WordPress theme",
+  "repositories": [{
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    },
+    {
+      "type": "path",
+      "url": "./plugins/wp-job-manager-simple-paid-listings",
+      "options": {
+        "symlink": false
+      },
+      "require": {
+        "composer/installers": "~1.0"
+      }
+    }, {
+      "type": "path",
+      "url": "./plugins/wp-job-manager-tags",
+      "options": {
+        "symlink": false
+      },
+      "require": {
+        "composer/installers": "~1.0"
+      }
+    }, {
+      "type": "path",
+      "url": "./plugins/wp-job-manager-alerts",
+      "options": {
+        "symlink": false
+      },
+      "require": {
+        "composer/installers": "~1.0"
+      }
+    }, {
+      "type": "path",
+      "url": "./plugins/wp-job-manager-bookmarks",
+      "options": {
+        "symlink": false
+      },
+      "require": {
+        "composer/installers": "~1.0"
+      }
+    }, {
+      "type": "path",
+      "url": "./plugins/wp-job-manager-resumes",
+      "options": {
+        "symlink": false
+      },
+      "require": {
+        "composer/installers": "~1.0"
+      }
+    }
+  ],
+  "require": {
+    "jaredpalmer/wp-job-manager-alerts": "@dev",
+    "jaredpalmer/wp-job-manager-bookmarks": "@dev",
+    "jaredpalmer/wp-job-manager-resumes": "@dev",
+    "jaredpalmer/wp-job-manager-simple-paid-listings": "@dev",
+    "jaredpalmer/wp-job-manager-tags": "@dev",
+    "wpackagist-plugin/wp-job-manager": "1.34.1",
+    "wpackagist-plugin/advanced-custom-fields": "4.4.11",
+    "wpackagist-plugin/buddypress": "5.1.0",
+    "wpackagist-plugin/members": "1.1.3",
+    "wpackagist-plugin/acf-to-rest-api": "2.2.1",
+    "roots/soil": "3.7.1",
+    "wpackagist-plugin/theme-my-login": "6.4.16"
+  }
+}
