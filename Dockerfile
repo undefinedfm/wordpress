@@ -44,8 +44,6 @@ ENV PATH="/var/www/.composer/vendor/bin:${PATH}"
 COPY . /var/www/html/wp-content/themes/presspack
 RUN cd /var/www/html/wp-content/themes/presspack && ls -la
 RUN cd /var/www/html/wp-content/themes/presspack && yarn install
-COPY ./composer.json /var/www/html/composer.json
-COPY ./composer.lock /var/www/html/composer.lock
-RUN cd /var/www/html && composer install --no-interaction
+RUN cd /var/www/html/wp-content/themes/presspack && composer install --no-interaction
 
 EXPOSE 8080
