@@ -27,4 +27,6 @@ WORKDIR /var/www/html/wp-content/themes/presspack
 RUN yarn install
 RUN composer install --no-interaction
 
+WORKDIR /var/www/html
+
 USER www-data:www-data
