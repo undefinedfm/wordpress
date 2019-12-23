@@ -21,9 +21,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 WORKDIR /var/www/html/wp-content/themes/presspack
 COPY . .
-USER www-data:www-data
+
 RUN yarn install
 RUN composer install --no-interaction
 
+USER www-data:www-data
 WORKDIR /var/www/html
 
