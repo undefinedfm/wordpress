@@ -1,131 +1,48 @@
 
-FROM php:7.4-apache
+FROM wordpress
 
-# persistent dependencies
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-	# Ghostscript is required for rendering PDF previews
-	ghostscript \
-	; \
-	rm -rf /var/lib/apt/lists/*
+RUN sed -i 's/80/8080/' /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
 
-# install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
-RUN set -ex; \
-	\
-	savedAptMark="$(apt-mark showmanual)"; \
-	\
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-	libfreetype6-dev \
-	libjpeg-dev \
-	libmagickwand-dev \
-	libpng-dev \
-	libzip-dev \
-	; \
-	\
-	docker-php-ext-configure gd --with-freetype --with-jpeg; \
-	docker-php-ext-install -j "$(nproc)" \
-	bcmath \
-	exif \
-	gd \
-	mysqli \
-	opcache \
-	zip \
-	; \
-	pecl install imagick-3.4.4; \
-	docker-php-ext-enable imagick; \
-	\
-	# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-	apt-mark auto '.*' > /dev/null; \
-	apt-mark manual $savedAptMark; \
-	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-	| awk '/=>/ { print $3 }' \
-	| sort -u \
-	| xargs -r dpkg-query -S \
-	| cut -d: -f1 \
-	| sort -u \
-	| xargs -rt apt-mark manual; \
-	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+RUN mv "$PHP_INI_DIR"/php.ini-development "$PHP_INI_DIR"/php.ini
 
-# set recommended PHP.ini settings
-# see https://secure.php.net/manual/en/opcache.installation.php
-RUN { \
-	echo 'opcache.memory_consumption=128'; \
-	echo 'opcache.interned_strings_buffer=8'; \
-	echo 'opcache.max_accelerated_files=4000'; \
-	echo 'opcache.revalidate_freq=2'; \
-	echo 'opcache.fast_shutdown=1'; \
-	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
-# https://wordpress.org/support/article/editing-wp-config-php/#configure-error-logging
-RUN { \
-	# https://www.php.net/manual/en/errorfunc.constants.php
-	# https://github.com/docker-library/wordpress/issues/420#issuecomment-517839670
-	echo 'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR'; \
-	echo 'display_errors = Off'; \
-	echo 'display_startup_errors = Off'; \
-	echo 'log_errors = On'; \
-	echo 'error_log = /dev/stderr'; \
-	echo 'log_errors_max_len = 1024'; \
-	echo 'ignore_repeated_errors = On'; \
-	echo 'ignore_repeated_source = Off'; \
-	echo 'html_errors = Off'; \
-	} > /usr/local/etc/php/conf.d/error-logging.ini
+# install_wordpress.sh & misc. dependencies
+RUN apt-get update; \
+  apt-get install -yq mariadb-client netcat sudo less git unzip nodejs
 
-RUN set -eux; \
-	a2enmod rewrite expires; \
-	\
-	# https://httpd.apache.org/docs/2.4/mod/mod_remoteip.html
-	a2enmod remoteip; \
-	{ \
-	echo 'RemoteIPHeader X-Forwarded-For'; \
-	# these IP ranges are reserved for "private" use and should thus *usually* be safe inside Docker
-	echo 'RemoteIPTrustedProxy 10.0.0.0/8'; \
-	echo 'RemoteIPTrustedProxy 172.16.0.0/12'; \
-	echo 'RemoteIPTrustedProxy 192.168.0.0/16'; \
-	echo 'RemoteIPTrustedProxy 169.254.0.0/16'; \
-	echo 'RemoteIPTrustedProxy 127.0.0.0/8'; \
-	} > /etc/apache2/conf-available/remoteip.conf; \
-	a2enconf remoteip; \
-	# https://github.com/docker-library/wordpress/issues/383#issuecomment-507886512
-	# (replace all instances of "%h" with "%a" in LogFormat)
-	find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
+# wp-cli
+RUN curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o wp; \
+  chmod +x wp; \
+  mv wp /usr/local/bin/; \
+  mkdir /var/www/.wp-cli; \
+  chown www-data:www-data /var/www/.wp-cli
 
-# Custom
-RUN apt-get -y install git
-RUN apt-get -y install unzip
+# composer
+RUN curl -sL https://raw.githubusercontent.com/composer/getcomposer.org/master/web/installer | php; \
+  mv composer.phar /usr/local/bin/composer; \
+  mkdir /var/www/.composer; \
+  chown www-data:www-data /var/www/.composer
 
-# needed stuff for node
-RUN apt-get -y install curl software-properties-common
-RUN apt-get -y install gnupg
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get install -y nodejs
 RUN npm i -g yarn
-# Install Composerr
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# phpunit, phpcs, wpcs
+RUN sudo -u www-data composer global require \
+  phpunit/phpunit \
+  dealerdirect/phpcodesniffer-composer-installer \
+  phpcompatibility/phpcompatibility-wp \
+  automattic/vipwpcs
 
-VOLUME /var/www/html
+# ensure wordpress has write permission on linux host https://github.com/postlight/headless-wp-starter/issues/202
+RUN chown -R www-data:www-data /var/www/html
 
-ENV WORDPRESS_VERSION 5.3.2
-ENV WORDPRESS_SHA1 fded476f112dbab14e3b5acddd2bcfa550e7b01b
+# include composer-installed executables in $PATH
+ENV PATH="/var/www/.composer/vendor/bin:${PATH}"
 
-RUN set -ex; \
-	curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz"; \
-	echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
-	# upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
-	tar -xzf wordpress.tar.gz -C /usr/src/; \
-	rm wordpress.tar.gz; \
-	chown -R www-data:www-data /usr/src/wordpress
 
 COPY . /var/www/html/wp-content/themes/presspack
 RUN cd /var/www/html/wp-content/themes/presspack && ls -la
 RUN cd /var/www/html/wp-content/themes/presspack && yarn install
-RUN cd /var/www/html/wp-content/themes/presspack && composer install --no-interaction
+COPY ./composer.json /var/www/html
+COPY ./composer.lock /var/www/html
+RUN cd /var/www/html && composer install --no-interaction
 
-COPY docker-entrypoint.sh /usr/local/bin/
-
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["apache2-foreground"]
+EXPOSE 8080
