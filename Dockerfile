@@ -35,8 +35,8 @@ RUN sudo -u www-data composer global require \
   automattic/vipwpcs
 
 COPY . /var/www/html/wp-content/themes/presspack
-RUN cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data ls -la
-RUN cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data yarn install
+RUN cd /var/www/html/wp-content/themes/presspack && ls -la
+RUN cd /var/www/html/wp-content/themes/presspack && yarn install
 
 COPY ./plugins /var/www/html/plugins
 COPY ./composer.json /var/www/html/composer.json
