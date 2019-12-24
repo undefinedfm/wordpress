@@ -35,13 +35,13 @@ RUN sudo -u www-data composer global require \
   automattic/vipwpcs
 
 COPY . /var/www/html/wp-content/themes/presspack
-RUN sudo -u www-data cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data ls -la
-RUN sudo -u www-data cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data yarn install
+RUN cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data ls -la
+RUN cd /var/www/html/wp-content/themes/presspack &&  sudo -u www-data yarn install
 
 COPY ./plugins /var/www/html/plugins
 COPY ./composer.json /var/www/html/composer.json
 COPY ./composer.lock /var/www/html/composer.lock
-RUN sudo -u www-data cd /var/www/html &&  sudo -u www-data composer install --no-interaction
+RUN cd /var/www/html &&  sudo -u www-data composer install --no-interaction
 
 # ensure wordpress has write permission on linux host https://github.com/postlight/headless-wp-starter/issues/202
 RUN chown -R www-data:www-data /var/www/html
