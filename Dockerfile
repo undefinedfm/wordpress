@@ -34,14 +34,14 @@ RUN sudo -u www-data composer global require \
   phpcompatibility/phpcompatibility-wp \
   automattic/vipwpcs
 
-COPY . /var/www/html/wp-content/themes/presspack
-RUN cd /var/www/html/wp-content/themes/presspack && ls -la
-RUN cd /var/www/html/wp-content/themes/presspack && yarn install
+COPY . /tmp/presspack
+RUN cd /tmp/presspack && ls -la
+RUN cd /tmp/presspack && yarn install
+RUN cd /tmp/presspack && composer install --no-interaction
 
-COPY ./plugins /var/www/html/plugins
-COPY ./composer.json /var/www/html/composer.json
-COPY ./composer.lock /var/www/html/composer.lock
-RUN cd /var/www/html &&  sudo -u www-data composer install --no-interaction
+RUN cp /tmp/presspack /var/www/html/wp-content/themes/presspack
+RUN cp /tmp/presspack/wp-content/plugins /var/www/html/wp-content/plugins
+RUN cp /tmp/presspack/vendor /var/www/html/vendor
 
 # ensure wordpress has write permission on linux host https://github.com/postlight/headless-wp-starter/issues/202
 RUN chown -R www-data:www-data /var/www/html
