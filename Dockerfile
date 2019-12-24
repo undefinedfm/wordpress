@@ -36,7 +36,7 @@ RUN sudo -u www-data composer global require \
 
 COPY . /var/www/html/wp-content/themes/presspack/
 RUN cd /var/www/html/wp-content/themes/presspack/ && ls -la
-RUN cd /var/www/html/wp-content/themes/presspack/ && /usr/local/bin/yarn install
+RUN cd /var/www/html/wp-content/themes/presspack/ && yarn install
 
 RUN cp /var/www/html/wp-content/themes/presspack/composer.json /var/www/html
 RUN cp /var/www/html/wp-content/themes/presspack/composer.lock /var/www/html
