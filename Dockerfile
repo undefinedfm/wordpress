@@ -40,13 +40,13 @@ RUN cd /var/www/html/wp-content/themes/presspack/ && yarn install
 
 RUN cp /var/www/html/wp-content/themes/presspack/composer.json /var/www/html
 RUN cp /var/www/html/wp-content/themes/presspack/composer.lock /var/www/html
-RUN cp /var/www/html/wp-content/themes/presspack/plugins /var/www/html/wp-content/plugins
+RUN mv /var/www/html/wp-content/themes/presspack/plugins /var/www/html/wp-content/plugins
 RUN cd /var/www/html && /usr/local/bin/composer install --no-interaction
 
 
 # ensure wordpress has write permission on linux host https://github.com/postlight/headless-wp-starter/issues/202
 RUN chown -R www-data:www-data /var/www/html
-
+RUN chmod -R www-data:www-data 777 /var/www/html
 # include composer-installed executables in $PATH
 ENV PATH="/var/www/.composer/vendor/bin:${PATH}"
 
